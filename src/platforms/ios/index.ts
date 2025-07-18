@@ -67,6 +67,7 @@ export class IosAssetGenerator extends AssetGenerator {
         return this.generateSplashes(asset, project);
     }
 
+    
     return [];
   }
 
