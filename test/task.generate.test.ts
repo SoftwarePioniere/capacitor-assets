@@ -64,4 +64,18 @@ describe('Task: Generate test', () => {
     // TODO: Make this more specific instead of "it generated a lot of assets"
     expect(generated.length).toBeGreaterThanOrEqual(77);
   });
+
+
+
+  it('Should Generate with Custom Icon And Splash Sets', async () => {
+    const { run } = await import('../src/tasks/generate');
+
+    ctx.args.iosIconSetName = 'test1';
+    ctx.args.iosSplashSetName = 'test1';
+
+    const generated = await run(ctx);
+
+    // TODO: Make this more specific instead of "it generated a lot of assets"
+    expect(generated.length).toBeGreaterThanOrEqual(77);
+  });
 });

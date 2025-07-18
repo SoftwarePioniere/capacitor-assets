@@ -31,6 +31,20 @@ export class IosAssetGenerator extends AssetGenerator {
     super(options);
   }
 
+  getAppIconSetPath() : string {
+    if (this.options.iosIconSetName) {
+      return `App/Assets.xcassets/${this.options.iosIconSetName}.appiconset`;
+    }
+    return IOS_APP_ICON_SET_PATH;
+  }
+
+  getSplashImageSetPath() : string {
+    if (this.options.iosSplashSetName) {
+      return `App/Assets.xcassets/${this.options.iosSplashSetName}.imageset`;
+    }
+    return IOS_SPLASH_IMAGE_SET_PATH;
+  }
+
   async generate(asset: InputAsset, project: Project): Promise<OutputAsset[]> {
     const iosDir = project.config.ios?.path;
 
@@ -87,7 +101,7 @@ export class IosAssetGenerator extends AssetGenerator {
       const lightSplashesGenerated: OutputAsset[] = [];
 
       for (const lightSplash of lightSplashes) {
-        const lightDest = join(iosDir, IOS_SPLASH_IMAGE_SET_PATH, lightSplash.name);
+        const lightDest = join(iosDir, this.getSplashImageSetPath(), lightSplash.name);
 
         const canvas = sharp({
           create: {
@@ -132,7 +146,7 @@ export class IosAssetGenerator extends AssetGenerator {
     const darkSplashesGenerated: OutputAsset[] = [];
 
     for (const darkSplash of darkSplashes) {
-      const darkDest = join(iosDir, IOS_SPLASH_IMAGE_SET_PATH, darkSplash.name);
+      const darkDest = join(iosDir, this.getSplashImageSetPath(), darkSplash.name);
       const canvas = sharp({
         create: {
           width: darkSplash.width ?? 0,
@@ -183,7 +197,15 @@ export class IosAssetGenerator extends AssetGenerator {
     const lightDefaultBackground = '#ffffff';
     const generated = await Promise.all(
       icons.map(async (icon) => {
-        const dest = join(iosDir, IOS_APP_ICON_SET_PATH, icon.name);
+        console.log('appicon 1');
+        const dest = join(iosDir, this.getAppIconSetPath(), icon.name);
+        console.log('appicon 2', dest);
+
+        // TODO: Verzeichnis erzeugen (fs) pfad aus dateiname lesen
+        const folder =join(iosDir, this.getAppIconSetPath());
+
+        // TODO: Contents.json checken wenn nicht mit images und info anlegen
+        
 
         const outputInfo = await pipe
           .resize(icon.width, icon.height)
@@ -191,6 +213,8 @@ export class IosAssetGenerator extends AssetGenerator {
           .flatten({ background: this.options.iconBackgroundColor ?? lightDefaultBackground })
           .toFile(dest);
 
+        console.log('appicon 3');
+        
         return new OutputAsset(
           icon,
           asset,
@@ -243,7 +267,7 @@ export class IosAssetGenerator extends AssetGenerator {
 
     for (const assetMeta of assetMetas) {
       const iosDir = project.config.ios!.path!;
-      const dest = join(iosDir, IOS_SPLASH_IMAGE_SET_PATH, assetMeta.name);
+      const dest = join(iosDir, this.getSplashImageSetPath(), assetMeta.name);
 
       const outputInfo = await pipe.resize(assetMeta.width, assetMeta.height).png().toFile(dest);
 
@@ -273,7 +297,7 @@ export class IosAssetGenerator extends AssetGenerator {
   }
 
   private async updateIconsContentsJson(generated: OutputAsset[], project: Project) {
-    const assetsPath = join(project.config.ios!.path!, IOS_APP_ICON_SET_PATH);
+    const assetsPath = join(project.config.ios!.path!, this.getAppIconSetPath());
     const contentsJsonPath = join(assetsPath, 'Contents.json');
     const json = await readFile(contentsJsonPath, { encoding: 'utf-8' });
 
@@ -304,7 +328,7 @@ export class IosAssetGenerator extends AssetGenerator {
   }
 
   private async updateSplashContentsJson(generated: OutputAsset[], project: Project) {
-    const contentsJsonPath = join(project.config.ios!.path!, IOS_SPLASH_IMAGE_SET_PATH, 'Contents.json');
+    const contentsJsonPath = join(project.config.ios!.path!, this.getSplashImageSetPath(), 'Contents.json');
     const json = await readFile(contentsJsonPath, { encoding: 'utf-8' });
 
     const parsed = JSON.parse(json);
@@ -334,7 +358,7 @@ export class IosAssetGenerator extends AssetGenerator {
   }
 
   private async updateSplashContentsJsonDark(generated: OutputAsset[], project: Project) {
-    const contentsJsonPath = join(project.config.ios!.path!, IOS_SPLASH_IMAGE_SET_PATH, 'Contents.json');
+    const contentsJsonPath = join(project.config.ios!.path!, this.getSplashImageSetPath(), 'Contents.json');
     const json = await readFile(contentsJsonPath, { encoding: 'utf-8' });
 
     const parsed = JSON.parse(json);

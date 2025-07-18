@@ -95,3 +95,20 @@ See the help instructions on the command line with the `--help` flag.
 ```shell
 npx @capacitor/assets generate --help
 ```
+
+```shell
+
+npm run localtestpublish
+
+npm version patch --no-git-tag-version --no-commit-hooks
+npm build
+# in this project
+npm pack
+
+# in application
+npm install --save-dev ../capacitor-assets/capacitor-assets-3.0.99.tgz
+
+capacitor-assets generate --assetPath branding/dev --iosProject apps/teamorga/apps/mobile/ios/App --ios
+
+capacitor-assets generate --assetPath branding/b04dev --iosProject apps/teamorga/apps/mobile/ios/App --ios --iosIconSetName AppIconB04 --iosSplashSetName SplashB04
+```

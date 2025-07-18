@@ -27,4 +27,8 @@ export interface AssetGeneratorOptions {
   logoSplashTargetWidth?: number;
   // Android product flavor name where generated assets will be created. Default: main
   androidFlavor?: string;
+
+  iosIconSetName?: string;
+  iosSplashSetName?: string;
+
 }
