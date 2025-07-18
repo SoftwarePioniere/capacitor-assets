@@ -202,7 +202,7 @@ export class IosAssetGenerator extends AssetGenerator {
         console.log('appicon 2', dest);
 
         // TODO: Verzeichnis erzeugen (fs) pfad aus dateiname lesen
-        const folder =join(iosDir, this.getAppIconSetPath());
+        // const folder =join(iosDir, this.getAppIconSetPath());
 
         // TODO: Contents.json checken wenn nicht mit images und info anlegen
         
