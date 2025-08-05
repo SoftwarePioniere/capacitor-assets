@@ -29,6 +29,10 @@ export interface AssetGeneratorOptions {
   androidFlavor?: string;
 
   iosIconSetName?: string;
+
   iosSplashSetName?: string;
 
+  androidIconSetName?: string;
+
+  androidSplashSetName?: string;
 }

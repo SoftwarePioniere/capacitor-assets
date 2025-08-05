@@ -1,4 +1,4 @@
-import { copy, pathExists, readdirp, readFile, rmSync as rm, statSync } from '@ionic/utils-fs';
+import { copy, pathExists, rmSync as rm} from '@ionic/utils-fs';
 import tempy from 'tempy';
 import sharp from 'sharp';
 import { join } from 'path';
@@ -7,12 +7,10 @@ import { Context, loadContext } from '../../src/ctx';
 import {
   AndroidOutputAssetTemplate,
   AndroidOutputAssetTemplateAdaptiveIcon,
-  AssetKind,
   Assets,
-} from '../../src/definitions';
-import { OutputAsset } from '../../src/output-asset';
-import { AndroidAssetGenerator } from '../../src/platforms/android';
-import * as AndroidAssets from '../../src/platforms/android/assets';
+} from '../../src';
+import { OutputAsset } from '../../src';
+import { AndroidAssetGenerator } from '../../src';
 
 describe('Android asset test', () => {
   let ctx: Context;
@@ -74,7 +72,6 @@ describe('Android asset test', () => {
     // Expect legacy main icons and rounded to be generated
     expect(generatedAssets.length).toBe(12);
 
-    const template = generatedAssets[0].template;
 
     Object.values(generatedAssets[0].destFilenames).map(async (f) => expect(await pathExists(f)).toBe(true));
 
@@ -137,6 +134,14 @@ describe('Android Asset Test - Logo Only', () => {
         const dest = Object.values(asset.destFilenames)[0];
         const pipe = sharp(dest);
         const metadata = await pipe.metadata();
+        // console.log("Assets", asset);
+        console.log("Assets.Template", {
+          asset: asset.asset,
+          temp: asset.template,
+          dest: dest,
+          metadata: metadata,
+          equals: metadata.width === asset.template.width && metadata.height === asset.template.height
+        });
         return metadata.width === asset.template.width && metadata.height === asset.template.height;
       }),
     );
@@ -174,7 +179,6 @@ describe('Android Asset Test - Logo Only', () => {
     });
     let generatedAssets = ((await assets.logo?.generate(strategy, ctx.project)) ??
       []) as OutputAsset<AndroidOutputAssetTemplate>[];
-
     expect(generatedAssets.length).toBe(50);
     await verifySizes(generatedAssets);
   });

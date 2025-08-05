@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
+// noinspection DuplicatedCode,HttpUrlsUsage
+
 import { mkdirp, pathExists, writeFile } from '@ionic/utils-fs';
-import { dirname, join, relative } from 'path';
+import { dirname, join } from 'path';
 import type { OutputInfo, Sharp } from 'sharp';
 import sharp from 'sharp';
 
@@ -9,21 +11,38 @@ import { AssetGenerator } from '../../asset-generator';
 import type {
   AndroidOutputAssetTemplate,
   AndroidOutputAssetTemplateAdaptiveIcon,
-  AndroidOutputAssetTemplateSplash,
+  // AndroidOutputAssetTemplateSplash,
 } from '../../definitions';
 import { AssetKind, Platform } from '../../definitions';
 import { BadPipelineError, BadProjectError } from '../../error';
 import type { InputAsset } from '../../input-asset';
 import { OutputAsset } from '../../output-asset';
 import type { Project } from '../../project';
-import { warn } from '../../util/log';
+// import { warn } from '../../util/log';
 
 import * as AndroidAssetTemplates from './assets';
+
+export const ANDROID_APP_ICON_NAME = 'ic_launcher';
+// export const ANDROID_SPLASH_IMAGE_NAME = 'splash';
 
 export class AndroidAssetGenerator extends AssetGenerator {
   constructor(options: AssetGeneratorOptions = {}) {
     super(options);
   }
+
+  getAppIconName() : string {
+    if (this.options.androidIconSetName) {
+      return `ic_launcher_${this.options.androidIconSetName}`;
+    }
+    return ANDROID_APP_ICON_NAME;
+  }
+
+  // getSplashImageName() : string {
+  //   if (this.options.androidSplashSetName) {
+  //     return `splash_${this.options.androidSplashSetName}`;
+  //   }
+  //   return ANDROID_SPLASH_IMAGE_NAME;
+  // }
 
   async generate(asset: InputAsset, project: Project): Promise<OutputAsset[]> {
     const androidDir = project.config.android?.path;
@@ -46,9 +65,9 @@ export class AndroidAssetGenerator extends AssetGenerator {
         return this.generateAdaptiveIconForeground(asset, project);
       case AssetKind.IconBackground:
         return this.generateAdaptiveIconBackground(asset, project);
-      case AssetKind.Splash:
-      case AssetKind.SplashDark:
-        return this.generateSplashes(asset, project);
+      // case AssetKind.Splash:
+      // case AssetKind.SplashDark:
+      //   return this.generateSplashes(asset, project);
     }
 
     return [];
@@ -76,38 +95,38 @@ export class AndroidAssetGenerator extends AssetGenerator {
       const generatedLegacyIcons = await this.generateLegacyIcon(asset, project);
       generated.push(...generatedLegacyIcons);
 
-      const splashes = Object.values(AndroidAssetTemplates).filter((a) => a.kind === AssetKind.Splash);
+      // const splashes = Object.values(AndroidAssetTemplates).filter((a) => a.kind === AssetKind.Splash);
 
-      const generatedSplashes = await Promise.all(
-        splashes.map(async (splash) => {
-          return this._generateSplashesFromLogo(
-            project,
-            asset,
-            splash,
-            pipe,
-            this.options.splashBackgroundColor ?? '#ffffff',
-          );
-        }),
-      );
-
-      generated.push(...generatedSplashes);
+      // const generatedSplashes = await Promise.all(
+      //   splashes.map(async (splash) => {
+      //     return this._generateSplashesFromLogo(
+      //       project,
+      //       asset,
+      //       splash,
+      //       pipe,
+      //       this.options.splashBackgroundColor ?? '#ffffff',
+      //     );
+      //   }),
+      // );
+      //
+      // generated.push(...generatedSplashes);
     }
 
     // Generate dark splashes
-    const darkSplashes = Object.values(AndroidAssetTemplates).filter((a) => a.kind === AssetKind.SplashDark);
-    const generatedSplashes = await Promise.all(
-      darkSplashes.map(async (splash) => {
-        return this._generateSplashesFromLogo(
-          project,
-          asset,
-          splash,
-          pipe,
-          this.options.splashBackgroundColorDark ?? '#111111',
-        );
-      }),
-    );
+    // const darkSplashes = Object.values(AndroidAssetTemplates).filter((a) => a.kind === AssetKind.SplashDark);
+    // const generatedSplashes = await Promise.all(
+    //   darkSplashes.map(async (splash) => {
+    //     return this._generateSplashesFromLogo(
+    //       project,
+    //       asset,
+    //       splash,
+    //       pipe,
+    //       this.options.splashBackgroundColorDark ?? '#111111',
+    //     );
+    //   }),
+    // );
 
-    generated.push(...generatedSplashes);
+    // generated.push(...generatedSplashes);
 
     return [...generated];
   }
@@ -156,69 +175,69 @@ export class AndroidAssetGenerator extends AssetGenerator {
     return [...foregroundImages, ...backgroundImages];
   }
 
-  private async _generateSplashesFromLogo(
-    project: Project,
-    asset: InputAsset,
-    splash: AndroidOutputAssetTemplate,
-    pipe: Sharp,
-    backgroundColor: string,
-  ): Promise<OutputAsset> {
-    // Generate light splash
-    const resPath = this.getResPath(project);
-
-    let drawableDir = `drawable`;
-    if (splash.density) {
-      drawableDir = `drawable-${splash.density}`;
-    }
-
-    const parentDir = join(resPath, drawableDir);
-    if (!(await pathExists(parentDir))) {
-      await mkdirp(parentDir);
-    }
-    const dest = join(resPath, drawableDir, 'splash.png');
-
-    const targetLogoWidthPercent = this.options.logoSplashScale ?? 0.2;
-    let targetWidth = this.options.logoSplashTargetWidth ?? Math.floor((splash.width ?? 0) * targetLogoWidthPercent);
-
-    if (targetWidth > splash.width || targetWidth > splash.height) {
-      targetWidth = Math.floor((splash.width ?? 0) * targetLogoWidthPercent);
-    }
-
-    if (targetWidth > splash.width || targetWidth > splash.height) {
-      warn(`Logo dimensions exceed dimensions of splash ${splash.width}x${splash.height}, using default logo size`);
-      targetWidth = Math.floor((splash.width ?? 0) * 0.2);
-    }
-
-    const canvas = sharp({
-      create: {
-        width: splash.width ?? 0,
-        height: splash.height ?? 0,
-        channels: 4,
-        background: backgroundColor,
-      },
-    });
-
-    const resized = await sharp(asset.path).resize(targetWidth).toBuffer();
-
-    const outputInfo = await canvas
-      .composite([{ input: resized, gravity: sharp.gravity.center }])
-      .png()
-      .toFile(dest);
-
-    const splashOutput = new OutputAsset(
-      splash,
-      asset,
-      project,
-      {
-        [dest]: dest,
-      },
-      {
-        [dest]: outputInfo,
-      },
-    );
-
-    return splashOutput;
-  }
+  // private async _generateSplashesFromLogo(
+  //   project: Project,
+  //   asset: InputAsset,
+  //   splash: AndroidOutputAssetTemplate,
+  //   pipe: Sharp,
+  //   backgroundColor: string,
+  // ): Promise<OutputAsset> {
+  //   // Generate light splash
+  //   const resPath = this.getResPath(project);
+  //
+  //   let drawableDir = `drawable`;
+  //   if (splash.density) {
+  //     drawableDir = `drawable-${splash.density}`;
+  //   }
+  //
+  //   const parentDir = join(resPath, drawableDir);
+  //   if (!(await pathExists(parentDir))) {
+  //     await mkdirp(parentDir);
+  //   }
+  //   const dest = join(resPath, drawableDir, 'splash.png');
+  //
+  //   const targetLogoWidthPercent = this.options.logoSplashScale ?? 0.2;
+  //   let targetWidth = this.options.logoSplashTargetWidth ?? Math.floor((splash.width ?? 0) * targetLogoWidthPercent);
+  //
+  //   if (targetWidth > splash.width || targetWidth > splash.height) {
+  //     targetWidth = Math.floor((splash.width ?? 0) * targetLogoWidthPercent);
+  //   }
+  //
+  //   if (targetWidth > splash.width || targetWidth > splash.height) {
+  //     warn(`Logo dimensions exceed dimensions of splash ${splash.width}x${splash.height}, using default logo size`);
+  //     targetWidth = Math.floor((splash.width ?? 0) * 0.2);
+  //   }
+  //
+  //   const canvas = sharp({
+  //     create: {
+  //       width: splash.width ?? 0,
+  //       height: splash.height ?? 0,
+  //       channels: 4,
+  //       background: backgroundColor,
+  //     },
+  //   });
+  //
+  //   const resized = await sharp(asset.path).resize(targetWidth).toBuffer();
+  //
+  //   const outputInfo = await canvas
+  //     .composite([{ input: resized, gravity: sharp.gravity.center }])
+  //     .png()
+  //     .toFile(dest);
+  //
+  //   const splashOutput = new OutputAsset(
+  //     splash,
+  //     asset,
+  //     project,
+  //     {
+  //       [dest]: dest,
+  //     },
+  //     {
+  //       [dest]: outputInfo,
+  //     },
+  //   );
+  //
+  //   return splashOutput;
+  // }
 
   private async generateLegacyIcon(asset: InputAsset, project: Project): Promise<OutputAsset[]> {
     const icons = Object.values(AndroidAssetTemplates).filter(
@@ -239,8 +258,8 @@ export class AndroidAssetGenerator extends AssetGenerator {
           icon,
           asset,
           project,
-          { [`mipmap-${icon.density}/ic_launcher.png`]: dest },
-          { [`mipmap-${icon.density}/ic_launcher.png`]: outputInfo },
+          { [`mipmap-${icon.density}/${this.getAppIconName()}.png`]: dest },
+          { [`mipmap-${icon.density}/${this.getAppIconName()}.png`]: outputInfo },
         );
       }),
     );
@@ -254,8 +273,8 @@ export class AndroidAssetGenerator extends AssetGenerator {
             icon,
             asset,
             project,
-            { [`mipmap-${icon.density}/ic_launcher_round.png`]: dest },
-            { [`mipmap-${icon.density}/ic_launcher_round.png`]: outputInfo },
+            { [`mipmap-${icon.density}/${this.getAppIconName()}_round.png`]: dest },
+            { [`mipmap-${icon.density}/${this.getAppIconName()}_round.png`]: outputInfo },
           );
         }),
       )),
@@ -276,7 +295,7 @@ export class AndroidAssetGenerator extends AssetGenerator {
     if (!(await pathExists(parentDir))) {
       await mkdirp(parentDir);
     }
-    const destRound = join(resPath, `mipmap-${template.density}`, 'ic_launcher.png');
+    const destRound = join(resPath, `mipmap-${template.density}`, `${this.getAppIconName()}.png`);
 
     // This pipeline is trick, but we need two separate pipelines
     // per https://github.com/lovell/sharp/issues/2378#issuecomment-864132578
@@ -310,7 +329,7 @@ export class AndroidAssetGenerator extends AssetGenerator {
     }" r="${template.width / 2}" fill="#ffffff"/></svg>`;
 
     const resPath = this.getResPath(project);
-    const destRound = join(resPath, `mipmap-${template.density}`, 'ic_launcher_round.png');
+    const destRound = join(resPath, `mipmap-${template.density}`, `${this.getAppIconName()}_round.png`);
 
     // This pipeline is tricky, but we need two separate pipelines
     // per https://github.com/lovell/sharp/issues/2378#issuecomment-864132578
@@ -350,7 +369,7 @@ export class AndroidAssetGenerator extends AssetGenerator {
     const resPath = this.getResPath(project);
 
     // Create the foreground and background images
-    const destForeground = join(resPath, `mipmap-${icon.density}`, 'ic_launcher_foreground.png');
+    const destForeground = join(resPath, `mipmap-${icon.density}`, `${this.getAppIconName()}.png`);
     const parentDir = dirname(destForeground);
     if (!(await pathExists(parentDir))) {
       await mkdirp(parentDir);
@@ -362,10 +381,10 @@ export class AndroidAssetGenerator extends AssetGenerator {
 <?xml version="1.0" encoding="utf-8"?>
 <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
     <background>
-        <inset android:drawable="@mipmap/ic_launcher_background" android:inset="16.7%" />
+        <inset android:drawable="@mipmap/${this.getAppIconName()}_background" android:inset="16.7%" />
     </background>
     <foreground>
-        <inset android:drawable="@mipmap/ic_launcher_foreground" android:inset="16.7%" />
+        <inset android:drawable="@mipmap/${this.getAppIconName()}_foreground" android:inset="16.7%" />
     </foreground>
 </adaptive-icon>
     `.trim();
@@ -385,12 +404,12 @@ export class AndroidAssetGenerator extends AssetGenerator {
       asset,
       project,
       {
-        [`mipmap-${icon.density}/ic_launcher_foreground.png`]: destForeground,
+        [`mipmap-${icon.density}/${this.getAppIconName()}_foreground.png`]: destForeground,
         'mipmap-anydpi-v26/ic_launcher.xml': destIcLauncher,
         'mipmap-anydpi-v26/ic_launcher_round.xml': destIcLauncherRound,
       },
       {
-        [`mipmap-${icon.density}/ic_launcher_foreground.png`]: outputInfoForeground,
+        [`mipmap-${icon.density}/${this.getAppIconName()}_foreground.png`]: outputInfoForeground,
       },
     );
   }
@@ -420,7 +439,7 @@ export class AndroidAssetGenerator extends AssetGenerator {
   ) {
     const resPath = this.getResPath(project);
 
-    const destBackground = join(resPath, `mipmap-${icon.density}`, 'ic_launcher_background.png');
+    const destBackground = join(resPath, `mipmap-${icon.density}`, `${this.getAppIconName()}_background.png`);
     const parentDir = dirname(destBackground);
     if (!(await pathExists(parentDir))) {
       await mkdirp(parentDir);
@@ -433,10 +452,10 @@ export class AndroidAssetGenerator extends AssetGenerator {
 <?xml version="1.0" encoding="utf-8"?>
 <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
     <background>
-        <inset android:drawable="@mipmap/ic_launcher_background" android:inset="16.7%" />
+        <inset android:drawable="@mipmap/${this.getAppIconName()}_background" android:inset="16.7%" />
     </background>
     <foreground>
-        <inset android:drawable="@mipmap/ic_launcher_foreground" android:inset="16.7%" />
+        <inset android:drawable="@mipmap/${this.getAppIconName()}_foreground" android:inset="16.7%" />
     </foreground>
 </adaptive-icon>
     `.trim();
@@ -456,71 +475,71 @@ export class AndroidAssetGenerator extends AssetGenerator {
       asset,
       project,
       {
-        [`mipmap-${icon.density}/ic_launcher_background.png`]: destBackground,
+        [`mipmap-${icon.density}/${this.getAppIconName()}_background.png`]: destBackground,
         'mipmap-anydpi-v26/ic_launcher.xml': destIcLauncher,
         'mipmap-anydpi-v26/ic_launcher_round.xml': destIcLauncherRound,
       },
       {
-        [`mipmap-${icon.density}/ic_launcher_background.png`]: outputInfoBackground,
+        [`mipmap-${icon.density}/${this.getAppIconName()}_background.png`]: outputInfoBackground,
       },
     );
   }
 
   private async updateManifest(project: Project) {
     project.android?.getAndroidManifest()?.setAttrs('manifest/application', {
-      'android:icon': '@mipmap/ic_launcher',
-      'android:roundIcon': '@mipmap/ic_launcher_round',
+      'android:icon': `@mipmap/ic_launcher`,
+      'android:roundIcon': `@mipmap/ic_launcher_round`,
     });
 
     await project.commit();
   }
 
-  private async generateSplashes(asset: InputAsset, project: Project): Promise<OutputAsset[]> {
-    const pipe = asset.pipeline();
+  // private async generateSplashes(asset: InputAsset, project: Project): Promise<OutputAsset[]> {
+  //   const pipe = asset.pipeline();
+  //
+  //   if (!pipe) {
+  //     throw new BadPipelineError('Sharp instance not created');
+  //   }
+  //
+  //   const splashes = (
+  //     asset.kind === AssetKind.Splash
+  //       ? Object.values(AndroidAssetTemplates).filter((a) => a.kind === AssetKind.Splash)
+  //       : Object.values(AndroidAssetTemplates).filter((a) => a.kind === AssetKind.SplashDark)
+  //   ) as AndroidOutputAssetTemplateSplash[];
+  //
+  //   const resPath = this.getResPath(project);
 
-    if (!pipe) {
-      throw new BadPipelineError('Sharp instance not created');
-    }
+    // const collected = await Promise.all(
+    //   splashes.map(async (splash) => {
+    //     const [dest, outputInfo] = await this.generateSplash(project, asset, splash, pipe);
+    //
+    //     const relPath = relative(resPath, dest);
+    //     return new OutputAsset(splash, asset, project, { [relPath]: dest }, { [relPath]: outputInfo });
+    //   }),
+    // );
 
-    const splashes = (
-      asset.kind === AssetKind.Splash
-        ? Object.values(AndroidAssetTemplates).filter((a) => a.kind === AssetKind.Splash)
-        : Object.values(AndroidAssetTemplates).filter((a) => a.kind === AssetKind.SplashDark)
-    ) as AndroidOutputAssetTemplateSplash[];
+  //   return collected;
+  // }
 
-    const resPath = this.getResPath(project);
-
-    const collected = await Promise.all(
-      splashes.map(async (splash) => {
-        const [dest, outputInfo] = await this.generateSplash(project, asset, splash, pipe);
-
-        const relPath = relative(resPath, dest);
-        return new OutputAsset(splash, asset, project, { [relPath]: dest }, { [relPath]: outputInfo });
-      }),
-    );
-
-    return collected;
-  }
-
-  private async generateSplash(
-    project: Project,
-    asset: InputAsset,
-    template: AndroidOutputAssetTemplateSplash,
-    pipe: Sharp,
-  ): Promise<[string, OutputInfo]> {
-    const drawableDir = template.density ? `drawable-${template.density}` : 'drawable';
-
-    const resPath = this.getResPath(project);
-    const parentDir = join(resPath, drawableDir);
-    if (!(await pathExists(parentDir))) {
-      await mkdirp(parentDir);
-    }
-    const dest = join(resPath, drawableDir, 'splash.png');
-
-    const outputInfo = await pipe.resize(template.width, template.height).png().toFile(dest);
-
-    return [dest, outputInfo];
-  }
+  // private async generateSplash(
+  //   project: Project,
+  //   asset: InputAsset,
+  //   template: AndroidOutputAssetTemplateSplash,
+  //   pipe: Sharp,
+  // ): Promise<[string, OutputInfo]> {
+  //   const drawableDir = template.density ? `drawable-${template.density}` : 'drawable';
+  //
+  //   const resPath = this.getResPath(project);
+  //   const parentDir = join(resPath, drawableDir);
+  //   if (!(await pathExists(parentDir))) {
+  //     await mkdirp(parentDir);
+  //   }
+  //   const dest = join(resPath, drawableDir, `${this.getSplashImageName()}.png`);
+  //
+  //   const outputInfo = await pipe.resize(template.width, template.height).png().toFile(dest);
+  //
+  //   return [dest, outputInfo];
+  // }
 
   private getResPath(project: Project): string {
     return join(project.config.android!.path!, 'app', 'src', this.options.androidFlavor ?? 'main', 'res');

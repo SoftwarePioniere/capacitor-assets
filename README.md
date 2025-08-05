@@ -101,14 +101,19 @@ npx @capacitor/assets generate --help
 npm run localtestpublish
 
 npm version patch --no-git-tag-version --no-commit-hooks
-npm build
+npm run build
 # in this project
 npm pack
 
 # in application
-npm install --save-dev ../capacitor-assets/capacitor-assets-3.0.99.tgz
+npm install --save-dev ../capacitor-assets/capacitor-assets-3.0.108.tgz
 
 capacitor-assets generate --assetPath branding/dev --iosProject apps/teamorga/apps/mobile/ios/App --ios
 
 capacitor-assets generate --assetPath branding/b04dev --iosProject apps/teamorga/apps/mobile/ios/App --ios --iosIconSetName AppIconB04 --iosSplashSetName SplashB04
+
+
+
+capacitor-assets generate --assetPath branding/b04dev --androidProject apps/teamorga/apps/mobile/android --android --androidIconSetName b04 --androidSplashSetName b04
+
 ```

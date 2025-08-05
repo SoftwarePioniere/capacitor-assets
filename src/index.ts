@@ -1,3 +1,5 @@
+// noinspection RequiredAttributes,XmlDeprecatedElement,HtmlDeprecatedTag,JSUnusedGlobalSymbols
+
 import { Command, InvalidArgumentError } from 'commander';
 
 import * as c from './colors';
@@ -83,10 +85,13 @@ export function runProgram(ctx: Context): void {
       '--androidFlavor <name>',
       'Android product flavor name where generated assets will be created. Defaults to "main".',
     )
+
     .option('--iosProject <dir>', 'Path to iOS project (defaults to "ios/App")')
     .option('--androidProject <dir>', 'Path to Android project (defaults to "android")')
     .option('--iosIconSetName <name>', 'Name of the ios IconSet (defaults to "AppIcon")')
     .option('--iosSplashSetName <name>', 'Name of the ios SplashSet (defaults to "Splash")')
+    .option('--androidIconSetName <name>', 'Name of the Android ic_launcher (defaults to "ic_launcher")')
+    .option('--androidSplashSetName <name>', 'Name of the Android Splash (defaults to "splash")')
     /*
     .option(
       '--pwaTags',
