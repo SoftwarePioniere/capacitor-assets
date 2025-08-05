@@ -1,6 +1,6 @@
 {
   "name": "@capacitor/assets",
-  "version": "3.0.108",
+  "version": "3.0.110",
   "description": "Generate icon and splash screen images for Capacitor apps",
   "homepage": "https://ionicframework.com",
   "author": "Ionic Team <hi@ionicframework.com>",
@@ -63,7 +63,7 @@
     "yargs": "17.7.2"
   },
   "devDependencies": {
-    "@capacitor/cli": "^6.0.0",
+    "@capacitor/cli": "7.4.2",
     "@changesets/cli": "2.26.2",
     "@ionic/eslint-config": "0.3.0",
     "@ionic/prettier-config": "4.0.0",
