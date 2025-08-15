@@ -96,6 +96,8 @@ See the help instructions on the command line with the `--help` flag.
 npx @capacitor/assets generate --help
 ```
 
+### SOPI
+
 ```shell
 
 npm run localtestpublish
@@ -104,6 +106,9 @@ npm version patch --no-git-tag-version --no-commit-hooks
 npm run build
 # in this project
 npm pack
+
+# publish npmpackage
+npm publish
 
 # in application
 npm install --save-dev ../capacitor-assets/capacitor-assets-3.0.108.tgz
