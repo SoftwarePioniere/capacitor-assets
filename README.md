@@ -40,7 +40,7 @@ Where the provided flags are:
 - `--androidProject` - the path to the Android project (default `android`)
 - `--assetPath <path>` - Path to the assets directory for your project. By default will check `"assets"` and `"resources"` directories, in that order.
 - `--iconBackgroundColor` - the background color (hex value) used when generating icon layers for light mode (default `#ffffff`)
-- `--iconBackgroundColorDark` - the background color (hex value) used when generating icon layers for dark mode (where supported) (default `#111111`)
+- `--iconBac kgroundColorDark` - the background color (hex value) used when generating icon layers for dark mode (where supported) (default `#111111`)
 - `--splashBackgroundColor` - the background color (hex value) used when generating splash screens (default `#ffffff`)
 - `--splashBackgroundColorDark` - the background color (hex value) used when generating splash screens for dark mode (where supported) (default `#111111`)
 - `--logoSplashTargetWidth` - A specific width to set the logo to when generating splash screens from a single logo file (not used by default, logo is scaled as percentage of splash instead, see `--logoSplashScale`)
@@ -98,21 +98,35 @@ npx @capacitor/assets generate --help
 
 ```shell
 
+# neue version local erstellen
 npm run localtestpublish
+
+# npm package publishen
+npm publish
 
 npm version patch --no-git-tag-version --no-commit-hooks
 npm run build
 # in this project
 npm pack
 
-# in application
-npm install --save-dev ../capacitor-assets/capacitor-assets-3.0.108.tgz
+# direkt ausführen
+node ../capacitor-assets/bin/capacitor-assets
+node ../capacitor-assets/bin/capacitor-assets generate --assetPath branding/dev --androidProject apps/teamorga/apps/mobile/android --android --androidIconSetName b04     
 
+
+# in application
+npm install --save-dev ../capacitor-assets/sopi-capacitor-assets-99.0.2.tgz
+
+
+# iOS
 capacitor-assets generate --assetPath branding/dev --iosProject apps/teamorga/apps/mobile/ios/App --ios
 
-capacitor-assets generate --assetPath branding/b04dev --iosProject apps/teamorga/apps/mobile/ios/App --ios --iosIconSetName AppIconB04 --iosSplashSetName SplashB04
+capacitor-assets generate --assetPath branding/b04dev --iosProject apps/teamorga/apps/mobile/ios/App --ios --iosIconSetName b04 --iosSplashSetName b04
 
+# Android
+capacitor-assets generate --assetPath branding/dev --androidProject apps/teamorga/apps/mobile/android --android
 
+capacitor-assets generate --assetPath branding/b04dev --androidProject apps/teamorga/apps/mobile/android --android --androidIconSetName b04
 
 capacitor-assets generate --assetPath branding/b04dev --androidProject apps/teamorga/apps/mobile/android --android --androidIconSetName b04 --androidSplashSetName b04
 

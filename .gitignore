@@ -4,3 +4,5 @@ src-old/
 test-old/
 .DS_Store
 *.tgz
+.idea/
+coverage/
