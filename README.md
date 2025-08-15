@@ -96,6 +96,8 @@ See the help instructions on the command line with the `--help` flag.
 npx @capacitor/assets generate --help
 ```
 
+### SOPI
+
 ```shell
 
 # neue version local erstellen
@@ -113,6 +115,9 @@ npm pack
 node ../capacitor-assets/bin/capacitor-assets
 node ../capacitor-assets/bin/capacitor-assets generate --assetPath branding/dev --androidProject apps/teamorga/apps/mobile/android --android --androidIconSetName b04     
 
+
+# publish npmpackage
+npm publish
 
 # in application
 npm install --save-dev ../capacitor-assets/sopi-capacitor-assets-99.0.2.tgz
