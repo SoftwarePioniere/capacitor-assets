@@ -88,8 +88,7 @@ export function runProgram(ctx: Context): void {
 
     .option('--iosProject <dir>', 'Path to iOS project (defaults to "ios/App")')
     .option('--androidProject <dir>', 'Path to Android project (defaults to "android")')
-    .option('--iconSetName <name>', 'Name of the ios IconSet (defaults to "AppIcon" and "ic_launcher")')
-    .option('--splashSetName <name>', 'Name of the ios SplashSet (defaults to "Splash" and "splash")')
+    .option('--customName <name>', 'Custom Name of the ios IconSet or Splash)')
     /*
     .option(
       '--pwaTags',
