@@ -26,22 +26,21 @@ export const ANDROID_APP_ICON_NAME = 'ic_launcher';
 export const ANDROID_SPLASH_IMAGE_NAME = 'splash';
 
 export class AndroidAssetGenerator extends AssetGenerator {
+
+  private useCustomName = false;
+  private appIconName = ANDROID_APP_ICON_NAME;
+  private splashImageName = ANDROID_SPLASH_IMAGE_NAME;
+
   constructor(options: AssetGeneratorOptions = {}) {
     super(options);
-  }
 
-  getAppIconName() : string {
-    if (this.options.androidIconSetName) {
-      return `ic_launcher_${this.options.androidIconSetName}`;
+    this.useCustomName = !!this.options.customName;
+    if (this.useCustomName) {
+      this.appIconName = `${ANDROID_APP_ICON_NAME}_${this.options.customName}`;
+      this.splashImageName = `${ANDROID_SPLASH_IMAGE_NAME}_${this.options.customName}`;
     }
-    return ANDROID_APP_ICON_NAME;
-  }
 
-  getSplashImageName() : string {
-    if (this.options.androidSplashSetName) {
-      return `splash_${this.options.androidSplashSetName}`;
-    }
-    return ANDROID_SPLASH_IMAGE_NAME;
+    console.log('useCustomName', this.useCustomName);
   }
 
   async generate(asset: InputAsset, project: Project): Promise<OutputAsset[]> {
@@ -194,7 +193,7 @@ export class AndroidAssetGenerator extends AssetGenerator {
     if (!(await pathExists(parentDir))) {
       await mkdirp(parentDir);
     }
-    const dest = join(resPath, drawableDir, 'splash.png');
+    const dest = join(resPath, drawableDir, `${this.splashImageName}.png`);
 
     const targetLogoWidthPercent = this.options.logoSplashScale ?? 0.2;
     let targetWidth = this.options.logoSplashTargetWidth ?? Math.floor((splash.width ?? 0) * targetLogoWidthPercent);
@@ -258,8 +257,8 @@ export class AndroidAssetGenerator extends AssetGenerator {
           icon,
           asset,
           project,
-          { [`mipmap-${icon.density}/${this.getAppIconName()}.png`]: dest },
-          { [`mipmap-${icon.density}/${this.getAppIconName()}.png`]: outputInfo },
+          { [`mipmap-${icon.density}/${this.appIconName}.png`]: dest },
+          { [`mipmap-${icon.density}/${this.appIconName}.png`]: outputInfo },
         );
       }),
     );
@@ -273,8 +272,8 @@ export class AndroidAssetGenerator extends AssetGenerator {
             icon,
             asset,
             project,
-            { [`mipmap-${icon.density}/${this.getAppIconName()}_round.png`]: dest },
-            { [`mipmap-${icon.density}/${this.getAppIconName()}_round.png`]: outputInfo },
+            { [`mipmap-${icon.density}/${this.appIconName}_round.png`]: dest },
+            { [`mipmap-${icon.density}/${this.appIconName}_round.png`]: outputInfo },
           );
         }),
       )),
@@ -295,7 +294,7 @@ export class AndroidAssetGenerator extends AssetGenerator {
     if (!(await pathExists(parentDir))) {
       await mkdirp(parentDir);
     }
-    const destRound = join(resPath, `mipmap-${template.density}`, `${this.getAppIconName()}.png`);
+    const destRound = join(resPath, `mipmap-${template.density}`, `${this.appIconName}.png`);
 
     // This pipeline is trick, but we need two separate pipelines
     // per https://github.com/lovell/sharp/issues/2378#issuecomment-864132578
@@ -324,12 +323,11 @@ export class AndroidAssetGenerator extends AssetGenerator {
     asset: InputAsset,
     template: AndroidOutputAssetTemplate,
   ): Promise<[string, OutputInfo]> {
-    const svg = `<svg width="${template.width}" height="${template.height}"><circle cx="${template.width / 2}" cy="${
-      template.height / 2
-    }" r="${template.width / 2}" fill="#ffffff"/></svg>`;
+    const svg = `<svg width="${template.width}" height="${template.height}"><circle cx="${template.width / 2}" cy="${template.height / 2
+      }" r="${template.width / 2}" fill="#ffffff"/></svg>`;
 
     const resPath = this.getResPath(project);
-    const destRound = join(resPath, `mipmap-${template.density}`, `${this.getAppIconName()}_round.png`);
+    const destRound = join(resPath, `mipmap-${template.density}`, `${this.appIconName}_round.png`);
 
     // This pipeline is tricky, but we need two separate pipelines
     // per https://github.com/lovell/sharp/issues/2378#issuecomment-864132578
@@ -369,7 +367,7 @@ export class AndroidAssetGenerator extends AssetGenerator {
     const resPath = this.getResPath(project);
 
     // Create the foreground and background images
-    const destForeground = join(resPath, `mipmap-${icon.density}`, `${this.getAppIconName()}.png`);
+    const destForeground = join(resPath, `mipmap-${icon.density}`, `${this.appIconName}.png`);
     const parentDir = dirname(destForeground);
     if (!(await pathExists(parentDir))) {
       await mkdirp(parentDir);
@@ -381,10 +379,10 @@ export class AndroidAssetGenerator extends AssetGenerator {
 <?xml version="1.0" encoding="utf-8"?>
 <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
     <background>
-        <inset android:drawable="@mipmap/${this.getAppIconName()}_background" android:inset="16.7%" />
+        <inset android:drawable="@mipmap/${this.appIconName}_background" android:inset="16.7%" />
     </background>
     <foreground>
-        <inset android:drawable="@mipmap/${this.getAppIconName()}_foreground" android:inset="16.7%" />
+        <inset android:drawable="@mipmap/${this.appIconName}_foreground" android:inset="16.7%" />
     </foreground>
 </adaptive-icon>
     `.trim();
@@ -404,12 +402,12 @@ export class AndroidAssetGenerator extends AssetGenerator {
       asset,
       project,
       {
-        [`mipmap-${icon.density}/${this.getAppIconName()}_foreground.png`]: destForeground,
+        [`mipmap-${icon.density}/${this.appIconName}_foreground.png`]: destForeground,
         'mipmap-anydpi-v26/ic_launcher.xml': destIcLauncher,
         'mipmap-anydpi-v26/ic_launcher_round.xml': destIcLauncherRound,
       },
       {
-        [`mipmap-${icon.density}/${this.getAppIconName()}_foreground.png`]: outputInfoForeground,
+        [`mipmap-${icon.density}/${this.appIconName}_foreground.png`]: outputInfoForeground,
       },
     );
   }
@@ -439,7 +437,7 @@ export class AndroidAssetGenerator extends AssetGenerator {
   ) {
     const resPath = this.getResPath(project);
 
-    const destBackground = join(resPath, `mipmap-${icon.density}`, `${this.getAppIconName()}_background.png`);
+    const destBackground = join(resPath, `mipmap-${icon.density}`, `${this.appIconName}_background.png`);
     const parentDir = dirname(destBackground);
     if (!(await pathExists(parentDir))) {
       await mkdirp(parentDir);
@@ -452,10 +450,10 @@ export class AndroidAssetGenerator extends AssetGenerator {
 <?xml version="1.0" encoding="utf-8"?>
 <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
     <background>
-        <inset android:drawable="@mipmap/${this.getAppIconName()}_background" android:inset="16.7%" />
+        <inset android:drawable="@mipmap/${this.appIconName}_background" android:inset="16.7%" />
     </background>
     <foreground>
-        <inset android:drawable="@mipmap/${this.getAppIconName()}_foreground" android:inset="16.7%" />
+        <inset android:drawable="@mipmap/${this.appIconName}_foreground" android:inset="16.7%" />
     </foreground>
 </adaptive-icon>
     `.trim();
@@ -464,8 +462,8 @@ export class AndroidAssetGenerator extends AssetGenerator {
     if (!(await pathExists(mipmapAnyPath))) {
       await mkdirp(mipmapAnyPath);
     }
-    const destIcLauncher = join(mipmapAnyPath, `${this.getAppIconName()}.xml`);
-    const destIcLauncherRound = join(mipmapAnyPath, `${this.getAppIconName()}_round.xml`);
+    const destIcLauncher = join(mipmapAnyPath, `${this.appIconName}.xml`);
+    const destIcLauncherRound = join(mipmapAnyPath, `${this.appIconName}_round.xml`);
     await writeFile(destIcLauncher, icLauncherXml);
     await writeFile(destIcLauncherRound, icLauncherXml);
 
@@ -475,82 +473,97 @@ export class AndroidAssetGenerator extends AssetGenerator {
       asset,
       project,
       {
-        [`mipmap-${icon.density}/${this.getAppIconName()}_background.png`]: destBackground,
-        [`mipmap-anydpi-v26/${this.getAppIconName()}.xml`]: destIcLauncher,
-        [`mipmap-anydpi-v26/${this.getAppIconName()}_round.xml`]: destIcLauncherRound,
+        [`mipmap-${icon.density}/${this.appIconName}_background.png`]: destBackground,
+        [`mipmap-anydpi-v26/${this.appIconName}.xml`]: destIcLauncher,
+        [`mipmap-anydpi-v26/${this.appIconName}_round.xml`]: destIcLauncherRound,
       },
       {
-        [`mipmap-${icon.density}/${this.getAppIconName()}_background.png`]: outputInfoBackground,
+        [`mipmap-${icon.density}/${this.appIconName}_background.png`]: outputInfoBackground,
       },
     );
   }
 
   private async updateManifest(project: Project) {
     const manifest = project.android?.getAndroidManifest();
-      manifest?.setAttrs('manifest/application', {
+    manifest?.setAttrs('manifest/application', {
       'android:icon': `@mipmap/ic_launcher`,
       'android:roundIcon': `@mipmap/ic_launcher_round`,
     });
-// TODO: Activity-aliase hinzufügen, löschen und eintragen
 
-    const   activityAlias = `
+    const aliasName = `.${this.useCustomName ? this.options.customName : 'Main'}`;
+
+    // Activity-aliase hinzufügen, löschen und eintragen
+    const activityAlias = `
         <activity-alias
-            android:name=".${this.options.androidIconSetName ?? 'Main'}"
-            android:enabled="${this.options.androidIconSetName ? 'false' : 'true'}"
+            android:name="${aliasName}"
+            android:enabled="${this.useCustomName ? 'false' : 'true'}"
             android:exported="true"
-            android:icon="@mipmap/${this.getAppIconName()}"
+            android:icon="@mipmap/${this.appIconName}"
             android:label="@string/app_name"
-            android:roundIcon="@mipmap/${this.getAppIconName()}_round"
+            android:roundIcon="@mipmap/${this.appIconName}_round"
             android:targetActivity=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity-alias>
+
           `.trim()
 
 
-    //  manifest?.setAttrs('manifest/manifest.json', {})
+    // wenn wir im default sind, dann alle activity aliase löschen und den .Main neu einfügen
+    if (!this.useCustomName) {
+      console.log('deleting activityAlias nodes');
+      manifest?.deleteNodes('manifest/application/activity-alias');
+      // .Main wirklich einfügen?
+      // manifest?.injectFragment('manifest/application', activityAlias);
+    }
 
+
+    // sonst prüfen ob den es custom schon gibt
     // lese alle alias nodes
     const aliasNodes = manifest?.find(`manifest/application/activity-alias`);
-console.log(aliasNodes);
+    // console.log(aliasNodes);
 
-    // wenn wir im default sind, dann alle activity aliase löschen und den .Main neu einfügen
-    // if (!this.options.androidIconSetName) {
-    //   manifest?.deleteNodes('manifest/application/activityAlias');
-      // console.log("Was geht hier los?", manifest?.deleteNodes('manifest/application/activity-alias'))
-      // manifest?.injectFragment('manifest/application',activityAlias);
-    // }
+    if (aliasNodes) {
+      for (const alias of aliasNodes) {
+        console.log('alias node:', alias.getAttribute('android:name'));
+        // console.log(alias.);
+      }
+
+      // check if alias exists
+      const currentAliasNode = aliasNodes?.find(x => x.getAttribute('android:name') === aliasName);
+      // console.log('currentAliasNode:', currentAliasNode);
+
+      if (!currentAliasNode) {
+        // console.log(activityAlias);
+        manifest?.injectFragment('manifest/application', activityAlias);
+      }
+
+    }
 
     // console.log(aliasNodes);
     // lösche alle alias nodes
-    //     TODO: Schwierigkeit ist das wir nicht gezielt löschen können, sondern nur alles mit dem tag <activity-alias>
-    if (aliasNodes) {
-      // console.log(aliasNodes);
-      for (const alias of aliasNodes) {
-        // console.log("JAJAJAJAJAJJA!", alias.attributes.getNamedItem("android:name")?.value);
-        // console.log("WHAT!", alias.nodeName.includes(this.options.androidIconSetName!));
-        console.log(`Check if for alias "${alias.nodeName}" to delete`, `.${this.options.androidIconSetName}` === alias.attributes.getNamedItem("android:name")?.value)
-        if (`.${this.options.androidIconSetName}` === alias.attributes.getNamedItem("android:name")?.value) {
-          console.log(`DELETE "${this.options.androidIconSetName}"`);
+    // TODO: Schwierigkeit ist das wir nicht gezielt löschen können, sondern nur alles mit dem tag <activity-alias>
+    // if (aliasNodes) {
+    //   // console.log(aliasNodes);
+    //   for (const alias of aliasNodes) {
+    //     // console.log("JAJAJAJAJAJJA!", alias.attributes.getNamedItem("android:name")?.value);
+    //     // console.log("WHAT!", alias.nodeName.includes(this.options.iconSetName!));
+    //     console.log(`Check if for alias "${alias.nodeName}" to delete`, `.${this.options.iconSetName}` === alias.attributes.getNamedItem("android:name")?.value)
+    //     if (`.${this.options.iconSetName}` === alias.attributes.getNamedItem("android:name")?.value) {
+    //       console.log(`DELETE "${this.options.iconSetName}"`);
 
-          alias.remove()
+    //       alias.remove()
 
-          // manifest?.deleteNodes(`manifest/application/${alias.nodeName}`);
-        }
-        // else if ('.Main' === alias.attributes.item(0)?.value) {
-        //   manifest?.deleteNodes(`manifest/application/${alias.nodeName}`);
-        // }
-      }
-      //   manifest?.deleteNodes(`manifest/application/${aliasNodes}`);
-    }
-    // wenn wir im 'named'-mode sind, dann nix löschen, sonder nur alias einfügen
-
-
-
-    // console.log(activityAlias);
-    manifest?.injectFragment('manifest/application',activityAlias);
+    //       // manifest?.deleteNodes(`manifest/application/${alias.nodeName}`);
+    //     }
+    //     // else if ('.Main' === alias.attributes.item(0)?.value) {
+    //     //   manifest?.deleteNodes(`manifest/application/${alias.nodeName}`);
+    //     // }
+    //   }
+    //   //   manifest?.deleteNodes(`manifest/application/${aliasNodes}`);
+    // }
 
     await project.commit();
   }
@@ -595,7 +608,7 @@ console.log(aliasNodes);
     if (!(await pathExists(parentDir))) {
       await mkdirp(parentDir);
     }
-    const dest = join(resPath, drawableDir, `${this.getSplashImageName()}.png`);
+    const dest = join(resPath, drawableDir, `${this.splashImageName}.png`);
 
     const outputInfo = await pipe.resize(template.width, template.height).png().toFile(dest);
 

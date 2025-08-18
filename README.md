@@ -103,36 +103,24 @@ npx @capacitor/assets generate --help
 # neue version local erstellen
 npm run localtestpublish
 
-# npm package publishen
-npm publish
-
+# new version and build and publish
 npm version patch --no-git-tag-version --no-commit-hooks
 npm run build
-# in this project
 npm pack
+npm publish
 
 # direkt ausführen
 node ../capacitor-assets/bin/capacitor-assets
-node ../capacitor-assets/bin/capacitor-assets generate --assetPath branding/dev --androidProject apps/teamorga/apps/mobile/android --android --androidIconSetName b04     
 
+node ../capacitor-assets/bin/capacitor-assets generate --assetPath branding/dev --androidProject apps/teamorga-mobile/android --android
+node ../capacitor-assets/bin/capacitor-assets generate --assetPath branding/b04dev --androidProject apps/teamorga-mobile/android --android --customName b04
 
-# publish npmpackage
-npm publish
+node ../capacitor-assets/bin/capacitor-assets generate --assetPath branding/dev --iosProject apps/teamorga-mobile/ios/App --ios
+node ../capacitor-assets/bin/capacitor-assets generate --assetPath branding/b04dev --iosProject apps/teamorga-mobile/ios/App --ios --customName b04
+
+node ../capacitor-assets/bin/capacitor-assets generate --assetPath branding/sopidev --iosProject apps/teamorga-mobile/ios/App --ios --customName sopidev
 
 # in application
 npm install --save-dev ../capacitor-assets/sopi-capacitor-assets-99.0.2.tgz
-
-
-# iOS
-capacitor-assets generate --assetPath branding/dev --iosProject apps/teamorga/apps/mobile/ios/App --ios
-
-capacitor-assets generate --assetPath branding/b04dev --iosProject apps/teamorga/apps/mobile/ios/App --ios --iosIconSetName b04 --iosSplashSetName b04
-
-# Android
-capacitor-assets generate --assetPath branding/dev --androidProject apps/teamorga/apps/mobile/android --android
-
-capacitor-assets generate --assetPath branding/b04dev --androidProject apps/teamorga/apps/mobile/android --android --androidIconSetName b04
-
-capacitor-assets generate --assetPath branding/b04dev --androidProject apps/teamorga/apps/mobile/android --android --androidIconSetName b04 --androidSplashSetName b04
 
 ```

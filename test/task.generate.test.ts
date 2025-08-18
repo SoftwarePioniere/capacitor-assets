@@ -68,11 +68,11 @@ describe('Task: Generate test', () => {
   it('Should Generate with Custom Icon And Splash Sets', async () => {
     const { run } = await import('../src/tasks/generate');
 
-    ctx.args.iosIconSetName = 'testIcon';
-    ctx.args.iosSplashSetName = 'testSplash';
+    ctx.args.iconSetName = 'testIcon';
+    ctx.args.splashSetName = 'testSplash';
 
-    ctx.args.androidIconSetName = 'b04';
-    ctx.args.androidSplashSetName = 'b04';
+    // ctx.args.iconSetName = 'b04';
+    // ctx.args.splashSetName = 'b04';
 
     const generated = await run(ctx);
 

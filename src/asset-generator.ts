@@ -28,11 +28,7 @@ export interface AssetGeneratorOptions {
   // Android product flavor name where generated assets will be created. Default: main
   androidFlavor?: string;
 
-  iosIconSetName?: string;
+  // custom icon or splash set name
+  customName?: string;
 
-  iosSplashSetName?: string;
-
-  androidIconSetName?: string;
-
-  androidSplashSetName?: string;
 }
