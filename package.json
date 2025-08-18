@@ -1,6 +1,6 @@
 {
   "name": "@sopi/capacitor-assets",
-  "version": "99.0.4",
+  "version": "99.0.5",
   "description": "Generate icon and splash screen images for Capacitor apps",
   "homepage": "https://ionicframework.com",
   "author": "Ionic Team <hi@ionicframework.com>",
