@@ -14,7 +14,6 @@ import type { InputAsset } from '../../input-asset';
 import { OutputAsset } from '../../output-asset';
 import type { Project } from '../../project';
 
-
 import {
   IOS_1X_UNIVERSAL_ANYANY_SPLASH,
   IOS_2X_UNIVERSAL_ANYANY_SPLASH,
@@ -25,14 +24,12 @@ import {
 } from './assets';
 import * as IosAssetTemplates from './assets';
 
-
 export const IOS_APP_ICON_SET_NAME = 'AppIcon';
 export const IOS_APP_ICON_SET_PATH = `App/Assets.xcassets/${IOS_APP_ICON_SET_NAME}.appiconset`;
 export const IOS_SPLASH_IMAGE_SET_NAME = 'Splash';
 export const IOS_SPLASH_IMAGE_SET_PATH = `App/Assets.xcassets/${IOS_SPLASH_IMAGE_SET_NAME}.imageset`;
 
 export class IosAssetGenerator extends AssetGenerator {
-
   private useCustomName = false;
   private appIconSetName = IOS_APP_ICON_SET_NAME;
   private appIconSetPathName = IOS_APP_ICON_SET_PATH;
@@ -58,13 +55,12 @@ export class IosAssetGenerator extends AssetGenerator {
   }
 
   async checkJsonExist(path: string, content: any = { images: [], info: {} }): Promise<void> {
-    const jsonExist = await pathExists(path)
+    const jsonExist = await pathExists(path);
 
     if (!jsonExist) {
-      await writeFile(path, JSON.stringify(content))
+      await writeFile(path, JSON.stringify(content));
     }
   }
-
 
   async generate(asset: InputAsset, project: Project): Promise<OutputAsset[]> {
     const iosDir = project.config.ios?.path;
@@ -87,7 +83,6 @@ export class IosAssetGenerator extends AssetGenerator {
       case AssetKind.SplashDark:
         return this.generateSplashes(asset, project);
     }
-
 
     return [];
   }
@@ -126,7 +121,7 @@ export class IosAssetGenerator extends AssetGenerator {
       for (const lightSplash of lightSplashes) {
         const lightDest = join(iosDir, this.splashImageSetPath, lightSplash.name);
 
-        await this.checkFolderExist(join(iosDir, this.splashImageSetPath))
+        await this.checkFolderExist(join(iosDir, this.splashImageSetPath));
 
         const canvas = sharp({
           create: {
@@ -172,7 +167,7 @@ export class IosAssetGenerator extends AssetGenerator {
 
     for (const darkSplash of darkSplashes) {
       const darkDestFolder = join(iosDir, this.splashImageSetPath, darkSplash.name);
-      await this.checkFolderExist(join(darkDestFolder, this.splashImageSetPath))
+      await this.checkFolderExist(join(darkDestFolder, this.splashImageSetPath));
       const darkDestFile = join(darkDestFolder, darkSplash.name);
       const canvas = sharp({
         create: {
@@ -225,19 +220,18 @@ export class IosAssetGenerator extends AssetGenerator {
     const lightDefaultBackground = '#ffffff';
     const generated = await Promise.all(
       icons.map(async (icon) => {
-
         const destFolder = join(iosDir, this.appIconSetPathName);
         await this.checkFolderExist(destFolder);
 
         if (this.useCustomName) {
-          await this.checkFolderExist(join(iosDir, this.appIconSetPathName))
-          const jsonDest = join(iosDir, this.appIconSetPathName, 'Contents.json')
+          await this.checkFolderExist(join(iosDir, this.appIconSetPathName));
+          const jsonDest = join(iosDir, this.appIconSetPathName, 'Contents.json');
           await this.checkJsonExist(jsonDest);
         }
 
         if (this.useCustomName) {
-          await this.checkFolderExist(join(iosDir, this.splashImageSetPath))
-          const jsonDest = join(iosDir, this.splashImageSetPath, 'Contents.json')
+          await this.checkFolderExist(join(iosDir, this.splashImageSetPath));
+          const jsonDest = join(iosDir, this.splashImageSetPath, 'Contents.json');
           await this.checkJsonExist(jsonDest);
         }
 
@@ -265,43 +259,36 @@ export class IosAssetGenerator extends AssetGenerator {
 
     await this.updateIconsContentsJson(generated, project);
 
-
     if (!this.useCustomName) {
-
       // plistentry primary icon
       const pl = {
         CFBundleIcons: {
           CFBundlePrimaryIcon: {
-            CFBundleIconFiles: [
-              IOS_APP_ICON_SET_NAME
-            ],
-            UIPrerenderedIcon: false
-          }
-        }
-      }
+            CFBundleIconFiles: [IOS_APP_ICON_SET_NAME],
+            UIPrerenderedIcon: false,
+          },
+        },
+      };
       // delete and alternate icons with replace to default
       await project.ios?.updateInfoPlist('App', null, pl, {
-        replace: true
+        replace: true,
       });
-
     } else {
-
       const pl = {
         CFBundleIcons: {
           CFBundleAlternateIcons: {
             [this.appIconSetName]: {
               CFBundleIconFiles: [this.appIconSetName],
               UIPrerenderedIcon: false,
-            }
-          }
-        }
-      }
+            },
+          },
+        },
+      };
 
       // neu hinzfügen mit merge
       await project.ios?.updateInfoPlist('App', null, pl, {
-        replace: false
+        replace: false,
       });
-
     }
 
     await project.commit();
@@ -333,10 +320,10 @@ export class IosAssetGenerator extends AssetGenerator {
       asset.kind === AssetKind.Splash
         ? [IOS_1X_UNIVERSAL_ANYANY_SPLASH, IOS_2X_UNIVERSAL_ANYANY_SPLASH, IOS_3X_UNIVERSAL_ANYANY_SPLASH]
         : [
-          IOS_1X_UNIVERSAL_ANYANY_SPLASH_DARK,
-          IOS_2X_UNIVERSAL_ANYANY_SPLASH_DARK,
-          IOS_3X_UNIVERSAL_ANYANY_SPLASH_DARK,
-        ];
+            IOS_1X_UNIVERSAL_ANYANY_SPLASH_DARK,
+            IOS_2X_UNIVERSAL_ANYANY_SPLASH_DARK,
+            IOS_3X_UNIVERSAL_ANYANY_SPLASH_DARK,
+          ];
 
     const generated: OutputAsset[] = [];
 
@@ -344,7 +331,7 @@ export class IosAssetGenerator extends AssetGenerator {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const iosDir = project.config.ios!.path!;
       const destFolder = join(iosDir, this.splashImageSetPath);
-      await this.checkFolderExist(destFolder)
+      await this.checkFolderExist(destFolder);
       const destFile = join(destFolder, assetMeta.name);
 
       const outputInfo = await pipe.resize(assetMeta.width, assetMeta.height).png().toFile(destFile);
@@ -411,7 +398,7 @@ export class IosAssetGenerator extends AssetGenerator {
   private async updateSplashContentsJson(generated: OutputAsset[], project: Project) {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const contentsJsonPath = join(project.config.ios!.path!, this.splashImageSetPath, 'Contents.json');
-    await this.checkJsonExist(contentsJsonPath,);
+    await this.checkJsonExist(contentsJsonPath);
     const json = await readFile(contentsJsonPath, { encoding: 'utf-8' });
 
     const parsed = JSON.parse(json);
@@ -443,7 +430,7 @@ export class IosAssetGenerator extends AssetGenerator {
   private async updateSplashContentsJsonDark(generated: OutputAsset[], project: Project) {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const contentsJsonPath = join(project.config.ios!.path!, this.splashImageSetPath, 'Contents.json');
-    await this.checkJsonExist(contentsJsonPath,);
+    await this.checkJsonExist(contentsJsonPath);
     const json = await readFile(contentsJsonPath, { encoding: 'utf-8' });
 
     const parsed = JSON.parse(json);

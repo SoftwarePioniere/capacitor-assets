@@ -26,7 +26,6 @@ export const ANDROID_APP_ICON_NAME = 'ic_launcher';
 export const ANDROID_SPLASH_IMAGE_NAME = 'splash';
 
 export class AndroidAssetGenerator extends AssetGenerator {
-
   private useCustomName = false;
   private appIconName = ANDROID_APP_ICON_NAME;
   private splashImageName = ANDROID_SPLASH_IMAGE_NAME;
@@ -323,8 +322,9 @@ export class AndroidAssetGenerator extends AssetGenerator {
     asset: InputAsset,
     template: AndroidOutputAssetTemplate,
   ): Promise<[string, OutputInfo]> {
-    const svg = `<svg width="${template.width}" height="${template.height}"><circle cx="${template.width / 2}" cy="${template.height / 2
-      }" r="${template.width / 2}" fill="#ffffff"/></svg>`;
+    const svg = `<svg width="${template.width}" height="${template.height}"><circle cx="${template.width / 2}" cy="${
+      template.height / 2
+    }" r="${template.width / 2}" fill="#ffffff"/></svg>`;
 
     const resPath = this.getResPath(project);
     const destRound = join(resPath, `mipmap-${template.density}`, `${this.appIconName}_round.png`);
@@ -508,8 +508,7 @@ export class AndroidAssetGenerator extends AssetGenerator {
             </intent-filter>
         </activity-alias>
 
-          `.trim()
-
+          `.trim();
 
     // wenn wir im default sind, dann alle activity aliase löschen und den .Main neu einfügen
     if (!this.useCustomName) {
@@ -518,7 +517,6 @@ export class AndroidAssetGenerator extends AssetGenerator {
       // .Main wirklich einfügen?
       // manifest?.injectFragment('manifest/application', activityAlias);
     }
-
 
     // sonst prüfen ob den es custom schon gibt
     // lese alle alias nodes
@@ -532,14 +530,13 @@ export class AndroidAssetGenerator extends AssetGenerator {
       }
 
       // check if alias exists
-      const currentAliasNode = aliasNodes?.find(x => x.getAttribute('android:name') === aliasName);
+      const currentAliasNode = aliasNodes?.find((x) => x.getAttribute('android:name') === aliasName);
       // console.log('currentAliasNode:', currentAliasNode);
 
       if (!currentAliasNode) {
         // console.log(activityAlias);
         manifest?.injectFragment('manifest/application', activityAlias);
       }
-
     }
 
     // console.log(aliasNodes);
