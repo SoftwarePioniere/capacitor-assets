@@ -21,6 +21,7 @@ import type { Project } from '../../project';
 import { warn } from '../../util/log';
 
 import * as AndroidAssetTemplates from './assets';
+import { parseXmlString } from '@trapezedev/project/dist/util/xml';
 
 export const ANDROID_APP_ICON_NAME = 'ic_launcher';
 export const ANDROID_SPLASH_IMAGE_NAME = 'splash';
@@ -514,8 +515,18 @@ export class AndroidAssetGenerator extends AssetGenerator {
     if (!this.useCustomName) {
       console.log('deleting activityAlias nodes');
       manifest?.deleteNodes('manifest/application/activity-alias');
+
+      // löscht den zweiten Launcher
+      console.log('deleting Main Activity Launcher');
+      manifest?.deleteNodes(`manifest/application/activity/intent-filter/category`);
+
       // .Main wirklich einfügen?
       // manifest?.injectFragment('manifest/application', activityAlias);
+
+    } else {
+      // TODO: Müssen Intentfilter mit Launcher aus der Haupt-activity finden und löschen
+      console.log('deleting Main Activity Launcher');
+      manifest?.deleteNodes(`manifest/application/activity/intent-filter/category`);
     }
 
     // sonst prüfen ob den es custom schon gibt
@@ -542,6 +553,7 @@ export class AndroidAssetGenerator extends AssetGenerator {
     // console.log(aliasNodes);
     // lösche alle alias nodes
     // TODO: Schwierigkeit ist das wir nicht gezielt löschen können, sondern nur alles mit dem tag <activity-alias>
+    // Todo: vielleicht nicht notwendig, ich kann aktuell nicht testen und mich einloggen
     // if (aliasNodes) {
     //   // console.log(aliasNodes);
     //   for (const alias of aliasNodes) {

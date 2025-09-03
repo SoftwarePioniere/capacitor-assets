@@ -103,6 +103,8 @@ npx @capacitor/assets generate --help
 # neue version local erstellen
 npm run localtestpublish
 
+# local testen: erst "npm run build", danach den gewünschten wählen bei "direkt ausführen"
+
 # new version and build and publish
 npm version patch --no-git-tag-version --no-commit-hooks
 npm run build
