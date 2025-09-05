@@ -229,12 +229,6 @@ export class IosAssetGenerator extends AssetGenerator {
           await this.checkJsonExist(jsonDest);
         }
 
-        if (this.useCustomName) {
-          await this.checkFolderExist(join(iosDir, this.splashImageSetPath));
-          const jsonDest = join(iosDir, this.splashImageSetPath, 'Contents.json');
-          await this.checkJsonExist(jsonDest);
-        }
-
         const destFile = join(destFolder, icon.name);
 
         const outputInfo = await pipe

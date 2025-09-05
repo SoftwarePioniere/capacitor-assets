@@ -21,7 +21,6 @@ import type { Project } from '../../project';
 import { warn } from '../../util/log';
 
 import * as AndroidAssetTemplates from './assets';
-import { parseXmlString } from '@trapezedev/project/dist/util/xml';
 
 export const ANDROID_APP_ICON_NAME = 'ic_launcher';
 export const ANDROID_SPLASH_IMAGE_NAME = 'splash';
@@ -53,19 +52,24 @@ export class AndroidAssetGenerator extends AssetGenerator {
     if (asset.platform !== Platform.Any && asset.platform !== Platform.Android) {
       return [];
     }
-
+    // TODO: Gucken welcher Case eintrifft, dann schauen wie die bilder generiert werden
     switch (asset.kind) {
       case AssetKind.Logo:
       case AssetKind.LogoDark:
+        console.log("CASE generateFromLogo")
         return this.generateFromLogo(asset, project);
       case AssetKind.Icon:
+        console.log("CASE generateLegacyIcon")
         return this.generateLegacyIcon(asset, project);
       case AssetKind.IconForeground:
+        console.log("CASE generateAdaptiveIconForeground")
         return this.generateAdaptiveIconForeground(asset, project);
       case AssetKind.IconBackground:
+        console.log("CASE generateAdaptiveIconBackground")
         return this.generateAdaptiveIconBackground(asset, project);
       case AssetKind.Splash:
       case AssetKind.SplashDark:
+        console.log("CASE generateSplashes")
         return this.generateSplashes(asset, project);
     }
 
@@ -368,7 +372,7 @@ export class AndroidAssetGenerator extends AssetGenerator {
     const resPath = this.getResPath(project);
 
     // Create the foreground and background images
-    const destForeground = join(resPath, `mipmap-${icon.density}`, `${this.appIconName}.png`);
+    const destForeground = join(resPath, `mipmap-${icon.density}`, `${this.appIconName}_foreground.png`);
     const parentDir = dirname(destForeground);
     if (!(await pathExists(parentDir))) {
       await mkdirp(parentDir);
@@ -446,6 +450,8 @@ export class AndroidAssetGenerator extends AssetGenerator {
 
     const outputInfoBackground = await pipe.resize(icon.width, icon.height).png().toFile(destBackground);
 
+    // TODO: Aktuell werden xml datein erstellt mit dem appIconName aber der default, also ic_launcher.xml übernimmt den letzten appIconName, der darf nicht überschrieben werden....
+
     // Create the adaptive icon XML
     const icLauncherXml = `
 <?xml version="1.0" encoding="utf-8"?>
@@ -515,31 +521,16 @@ export class AndroidAssetGenerator extends AssetGenerator {
     if (!this.useCustomName) {
       console.log('deleting activityAlias nodes');
       manifest?.deleteNodes('manifest/application/activity-alias');
-
-      // löscht den zweiten Launcher
-      console.log('deleting Main Activity Launcher');
-      manifest?.deleteNodes(`manifest/application/activity/intent-filter/category`);
-
-      // .Main wirklich einfügen?
-      // manifest?.injectFragment('manifest/application', activityAlias);
-
-    } else {
-      // TODO: Müssen Intentfilter mit Launcher aus der Haupt-activity finden und löschen
-      console.log('deleting Main Activity Launcher');
-      manifest?.deleteNodes(`manifest/application/activity/intent-filter/category`);
     }
 
-    // sonst prüfen ob den es custom schon gibt
     // lese alle alias nodes
     const aliasNodes = manifest?.find(`manifest/application/activity-alias`);
-    // console.log(aliasNodes);
 
     if (aliasNodes) {
       for (const alias of aliasNodes) {
         console.log('alias node:', alias.getAttribute('android:name'));
         // console.log(alias.);
       }
-
       // check if alias exists
       const currentAliasNode = aliasNodes?.find((x) => x.getAttribute('android:name') === aliasName);
       // console.log('currentAliasNode:', currentAliasNode);
@@ -549,30 +540,6 @@ export class AndroidAssetGenerator extends AssetGenerator {
         manifest?.injectFragment('manifest/application', activityAlias);
       }
     }
-
-    // console.log(aliasNodes);
-    // lösche alle alias nodes
-    // TODO: Schwierigkeit ist das wir nicht gezielt löschen können, sondern nur alles mit dem tag <activity-alias>
-    // Todo: vielleicht nicht notwendig, ich kann aktuell nicht testen und mich einloggen
-    // if (aliasNodes) {
-    //   // console.log(aliasNodes);
-    //   for (const alias of aliasNodes) {
-    //     // console.log("JAJAJAJAJAJJA!", alias.attributes.getNamedItem("android:name")?.value);
-    //     // console.log("WHAT!", alias.nodeName.includes(this.options.iconSetName!));
-    //     console.log(`Check if for alias "${alias.nodeName}" to delete`, `.${this.options.iconSetName}` === alias.attributes.getNamedItem("android:name")?.value)
-    //     if (`.${this.options.iconSetName}` === alias.attributes.getNamedItem("android:name")?.value) {
-    //       console.log(`DELETE "${this.options.iconSetName}"`);
-
-    //       alias.remove()
-
-    //       // manifest?.deleteNodes(`manifest/application/${alias.nodeName}`);
-    //     }
-    //     // else if ('.Main' === alias.attributes.item(0)?.value) {
-    //     //   manifest?.deleteNodes(`manifest/application/${alias.nodeName}`);
-    //     // }
-    //   }
-    //   //   manifest?.deleteNodes(`manifest/application/${aliasNodes}`);
-    // }
 
     await project.commit();
   }
