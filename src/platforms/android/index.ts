@@ -52,24 +52,18 @@ export class AndroidAssetGenerator extends AssetGenerator {
     if (asset.platform !== Platform.Any && asset.platform !== Platform.Android) {
       return [];
     }
-    // TODO: Gucken welcher Case eintrifft, dann schauen wie die bilder generiert werden
     switch (asset.kind) {
       case AssetKind.Logo:
       case AssetKind.LogoDark:
-        console.log("CASE generateFromLogo")
         return this.generateFromLogo(asset, project);
       case AssetKind.Icon:
-        console.log("CASE generateLegacyIcon")
         return this.generateLegacyIcon(asset, project);
       case AssetKind.IconForeground:
-        console.log("CASE generateAdaptiveIconForeground")
         return this.generateAdaptiveIconForeground(asset, project);
       case AssetKind.IconBackground:
-        console.log("CASE generateAdaptiveIconBackground")
         return this.generateAdaptiveIconBackground(asset, project);
       case AssetKind.Splash:
       case AssetKind.SplashDark:
-        console.log("CASE generateSplashes")
         return this.generateSplashes(asset, project);
     }
 
@@ -396,8 +390,8 @@ export class AndroidAssetGenerator extends AssetGenerator {
     if (!(await pathExists(mipmapAnyPath))) {
       await mkdirp(mipmapAnyPath);
     }
-    const destIcLauncher = join(mipmapAnyPath, `ic_launcher.xml`);
-    const destIcLauncherRound = join(mipmapAnyPath, `ic_launcher_round.xml`);
+    const destIcLauncher = join(mipmapAnyPath, `${this.appIconName}.xml`);
+    const destIcLauncherRound = join(mipmapAnyPath, `${this.appIconName}_round.xml`);
     await writeFile(destIcLauncher, icLauncherXml);
     await writeFile(destIcLauncherRound, icLauncherXml);
 
@@ -408,8 +402,8 @@ export class AndroidAssetGenerator extends AssetGenerator {
       project,
       {
         [`mipmap-${icon.density}/${this.appIconName}_foreground.png`]: destForeground,
-        'mipmap-anydpi-v26/ic_launcher.xml': destIcLauncher,
-        'mipmap-anydpi-v26/ic_launcher_round.xml': destIcLauncherRound,
+        [`mipmap-anydpi-v26/${this.appIconName}.xml`]: destIcLauncher,
+        [`mipmap-anydpi-v26/${this.appIconName}_round.xml`]: destIcLauncherRound,
       },
       {
         [`mipmap-${icon.density}/${this.appIconName}_foreground.png`]: outputInfoForeground,
@@ -449,8 +443,6 @@ export class AndroidAssetGenerator extends AssetGenerator {
     }
 
     const outputInfoBackground = await pipe.resize(icon.width, icon.height).png().toFile(destBackground);
-
-    // TODO: Aktuell werden xml datein erstellt mit dem appIconName aber der default, also ic_launcher.xml übernimmt den letzten appIconName, der darf nicht überschrieben werden....
 
     // Create the adaptive icon XML
     const icLauncherXml = `
