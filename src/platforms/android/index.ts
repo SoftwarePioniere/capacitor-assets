@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
+// noinspection DuplicatedCode,HttpUrlsUsage
+
 import { mkdirp, pathExists, writeFile } from '@ionic/utils-fs';
 import { dirname, join, relative } from 'path';
 import type { OutputInfo, Sharp } from 'sharp';
@@ -20,9 +22,24 @@ import { warn } from '../../util/log';
 
 import * as AndroidAssetTemplates from './assets';
 
+export const ANDROID_APP_ICON_NAME = 'ic_launcher';
+export const ANDROID_SPLASH_IMAGE_NAME = 'splash';
+
 export class AndroidAssetGenerator extends AssetGenerator {
+  private useCustomName = false;
+  private appIconName = ANDROID_APP_ICON_NAME;
+  private splashImageName = ANDROID_SPLASH_IMAGE_NAME;
+
   constructor(options: AssetGeneratorOptions = {}) {
     super(options);
+
+    this.useCustomName = !!this.options.customName;
+    if (this.useCustomName) {
+      this.appIconName = `${ANDROID_APP_ICON_NAME}_${this.options.customName}`;
+      this.splashImageName = `${ANDROID_SPLASH_IMAGE_NAME}_${this.options.customName}`;
+    }
+
+    console.log('useCustomName', this.useCustomName);
   }
 
   async generate(asset: InputAsset, project: Project): Promise<OutputAsset[]> {
@@ -35,7 +52,6 @@ export class AndroidAssetGenerator extends AssetGenerator {
     if (asset.platform !== Platform.Any && asset.platform !== Platform.Android) {
       return [];
     }
-
     switch (asset.kind) {
       case AssetKind.Logo:
       case AssetKind.LogoDark:
@@ -175,7 +191,7 @@ export class AndroidAssetGenerator extends AssetGenerator {
     if (!(await pathExists(parentDir))) {
       await mkdirp(parentDir);
     }
-    const dest = join(resPath, drawableDir, 'splash.png');
+    const dest = join(resPath, drawableDir, `${this.splashImageName}.png`);
 
     const targetLogoWidthPercent = this.options.logoSplashScale ?? 0.2;
     let targetWidth = this.options.logoSplashTargetWidth ?? Math.floor((splash.width ?? 0) * targetLogoWidthPercent);
@@ -239,8 +255,8 @@ export class AndroidAssetGenerator extends AssetGenerator {
           icon,
           asset,
           project,
-          { [`mipmap-${icon.density}/ic_launcher.png`]: dest },
-          { [`mipmap-${icon.density}/ic_launcher.png`]: outputInfo },
+          { [`mipmap-${icon.density}/${this.appIconName}.png`]: dest },
+          { [`mipmap-${icon.density}/${this.appIconName}.png`]: outputInfo },
         );
       }),
     );
@@ -254,8 +270,8 @@ export class AndroidAssetGenerator extends AssetGenerator {
             icon,
             asset,
             project,
-            { [`mipmap-${icon.density}/ic_launcher_round.png`]: dest },
-            { [`mipmap-${icon.density}/ic_launcher_round.png`]: outputInfo },
+            { [`mipmap-${icon.density}/${this.appIconName}_round.png`]: dest },
+            { [`mipmap-${icon.density}/${this.appIconName}_round.png`]: outputInfo },
           );
         }),
       )),
@@ -276,7 +292,7 @@ export class AndroidAssetGenerator extends AssetGenerator {
     if (!(await pathExists(parentDir))) {
       await mkdirp(parentDir);
     }
-    const destRound = join(resPath, `mipmap-${template.density}`, 'ic_launcher.png');
+    const destRound = join(resPath, `mipmap-${template.density}`, `${this.appIconName}.png`);
 
     // This pipeline is trick, but we need two separate pipelines
     // per https://github.com/lovell/sharp/issues/2378#issuecomment-864132578
@@ -310,7 +326,7 @@ export class AndroidAssetGenerator extends AssetGenerator {
     }" r="${template.width / 2}" fill="#ffffff"/></svg>`;
 
     const resPath = this.getResPath(project);
-    const destRound = join(resPath, `mipmap-${template.density}`, 'ic_launcher_round.png');
+    const destRound = join(resPath, `mipmap-${template.density}`, `${this.appIconName}_round.png`);
 
     // This pipeline is tricky, but we need two separate pipelines
     // per https://github.com/lovell/sharp/issues/2378#issuecomment-864132578
@@ -325,7 +341,7 @@ export class AndroidAssetGenerator extends AssetGenerator {
 
   private async generateAdaptiveIconForeground(asset: InputAsset, project: Project): Promise<OutputAsset[]> {
     const icons = Object.values(AndroidAssetTemplates).filter(
-      (a) => a.kind === AssetKind.Icon,
+      (a) => a.kind === AssetKind.AdaptiveIcon,
     ) as AndroidOutputAssetTemplateAdaptiveIcon[];
 
     const pipe = asset.pipeline();
@@ -350,7 +366,7 @@ export class AndroidAssetGenerator extends AssetGenerator {
     const resPath = this.getResPath(project);
 
     // Create the foreground and background images
-    const destForeground = join(resPath, `mipmap-${icon.density}`, 'ic_launcher_foreground.png');
+    const destForeground = join(resPath, `mipmap-${icon.density}`, `${this.appIconName}_foreground.png`);
     const parentDir = dirname(destForeground);
     if (!(await pathExists(parentDir))) {
       await mkdirp(parentDir);
@@ -362,10 +378,10 @@ export class AndroidAssetGenerator extends AssetGenerator {
 <?xml version="1.0" encoding="utf-8"?>
 <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
     <background>
-        <inset android:drawable="@mipmap/ic_launcher_background" android:inset="16.7%" />
+        <inset android:drawable="@mipmap/${this.appIconName}_background" android:inset="16.7%" />
     </background>
     <foreground>
-        <inset android:drawable="@mipmap/ic_launcher_foreground" android:inset="16.7%" />
+        <inset android:drawable="@mipmap/${this.appIconName}_foreground" android:inset="16.7%" />
     </foreground>
 </adaptive-icon>
     `.trim();
@@ -374,8 +390,8 @@ export class AndroidAssetGenerator extends AssetGenerator {
     if (!(await pathExists(mipmapAnyPath))) {
       await mkdirp(mipmapAnyPath);
     }
-    const destIcLauncher = join(mipmapAnyPath, `ic_launcher.xml`);
-    const destIcLauncherRound = join(mipmapAnyPath, `ic_launcher_round.xml`);
+    const destIcLauncher = join(mipmapAnyPath, `${this.appIconName}.xml`);
+    const destIcLauncherRound = join(mipmapAnyPath, `${this.appIconName}_round.xml`);
     await writeFile(destIcLauncher, icLauncherXml);
     await writeFile(destIcLauncherRound, icLauncherXml);
 
@@ -385,19 +401,19 @@ export class AndroidAssetGenerator extends AssetGenerator {
       asset,
       project,
       {
-        [`mipmap-${icon.density}/ic_launcher_foreground.png`]: destForeground,
-        'mipmap-anydpi-v26/ic_launcher.xml': destIcLauncher,
-        'mipmap-anydpi-v26/ic_launcher_round.xml': destIcLauncherRound,
+        [`mipmap-${icon.density}/${this.appIconName}_foreground.png`]: destForeground,
+        [`mipmap-anydpi-v26/${this.appIconName}.xml`]: destIcLauncher,
+        [`mipmap-anydpi-v26/${this.appIconName}_round.xml`]: destIcLauncherRound,
       },
       {
-        [`mipmap-${icon.density}/ic_launcher_foreground.png`]: outputInfoForeground,
+        [`mipmap-${icon.density}/${this.appIconName}_foreground.png`]: outputInfoForeground,
       },
     );
   }
 
   private async generateAdaptiveIconBackground(asset: InputAsset, project: Project): Promise<OutputAsset[]> {
     const icons = Object.values(AndroidAssetTemplates).filter(
-      (a) => a.kind === AssetKind.Icon,
+      (a) => a.kind === AssetKind.AdaptiveIcon,
     ) as AndroidOutputAssetTemplateAdaptiveIcon[];
 
     const pipe = asset.pipeline();
@@ -420,7 +436,7 @@ export class AndroidAssetGenerator extends AssetGenerator {
   ) {
     const resPath = this.getResPath(project);
 
-    const destBackground = join(resPath, `mipmap-${icon.density}`, 'ic_launcher_background.png');
+    const destBackground = join(resPath, `mipmap-${icon.density}`, `${this.appIconName}_background.png`);
     const parentDir = dirname(destBackground);
     if (!(await pathExists(parentDir))) {
       await mkdirp(parentDir);
@@ -433,10 +449,10 @@ export class AndroidAssetGenerator extends AssetGenerator {
 <?xml version="1.0" encoding="utf-8"?>
 <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
     <background>
-        <inset android:drawable="@mipmap/ic_launcher_background" android:inset="16.7%" />
+        <inset android:drawable="@mipmap/${this.appIconName}_background" android:inset="16.7%" />
     </background>
     <foreground>
-        <inset android:drawable="@mipmap/ic_launcher_foreground" android:inset="16.7%" />
+        <inset android:drawable="@mipmap/${this.appIconName}_foreground" android:inset="16.7%" />
     </foreground>
 </adaptive-icon>
     `.trim();
@@ -445,8 +461,8 @@ export class AndroidAssetGenerator extends AssetGenerator {
     if (!(await pathExists(mipmapAnyPath))) {
       await mkdirp(mipmapAnyPath);
     }
-    const destIcLauncher = join(mipmapAnyPath, `ic_launcher.xml`);
-    const destIcLauncherRound = join(mipmapAnyPath, `ic_launcher_round.xml`);
+    const destIcLauncher = join(mipmapAnyPath, `${this.appIconName}.xml`);
+    const destIcLauncherRound = join(mipmapAnyPath, `${this.appIconName}_round.xml`);
     await writeFile(destIcLauncher, icLauncherXml);
     await writeFile(destIcLauncherRound, icLauncherXml);
 
@@ -456,21 +472,66 @@ export class AndroidAssetGenerator extends AssetGenerator {
       asset,
       project,
       {
-        [`mipmap-${icon.density}/ic_launcher_background.png`]: destBackground,
-        'mipmap-anydpi-v26/ic_launcher.xml': destIcLauncher,
-        'mipmap-anydpi-v26/ic_launcher_round.xml': destIcLauncherRound,
+        [`mipmap-${icon.density}/${this.appIconName}_background.png`]: destBackground,
+        [`mipmap-anydpi-v26/${this.appIconName}.xml`]: destIcLauncher,
+        [`mipmap-anydpi-v26/${this.appIconName}_round.xml`]: destIcLauncherRound,
       },
       {
-        [`mipmap-${icon.density}/ic_launcher_background.png`]: outputInfoBackground,
+        [`mipmap-${icon.density}/${this.appIconName}_background.png`]: outputInfoBackground,
       },
     );
   }
 
   private async updateManifest(project: Project) {
-    project.android?.getAndroidManifest()?.setAttrs('manifest/application', {
-      'android:icon': '@mipmap/ic_launcher',
-      'android:roundIcon': '@mipmap/ic_launcher_round',
+    const manifest = project.android?.getAndroidManifest();
+    manifest?.setAttrs('manifest/application', {
+      'android:icon': `@mipmap/ic_launcher`,
+      'android:roundIcon': `@mipmap/ic_launcher_round`,
     });
+
+    const aliasName = `.${this.useCustomName ? this.options.customName : 'Main'}`;
+
+    // Activity-aliase hinzufügen, löschen und eintragen
+    const activityAlias = `
+        <activity-alias
+            android:name="${aliasName}"
+            android:enabled="${this.useCustomName ? 'false' : 'true'}"
+            android:exported="true"
+            android:icon="@mipmap/${this.appIconName}"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/${this.appIconName}_round"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+          `.trim();
+
+    // wenn wir im default sind, dann alle activity aliase löschen und den .Main neu einfügen
+    if (!this.useCustomName) {
+      console.log('deleting activityAlias nodes');
+      manifest?.deleteNodes('manifest/application/activity-alias');
+    }
+
+    // lese alle alias nodes
+    const aliasNodes = manifest?.find(`manifest/application/activity-alias`);
+
+    if (aliasNodes) {
+      for (const alias of aliasNodes) {
+        console.log('alias node:', alias.getAttribute('android:name'));
+        // console.log(alias.);
+      }
+      // check if alias exists
+      const currentAliasNode = aliasNodes?.find((x) => x.getAttribute('android:name') === aliasName);
+      // console.log('currentAliasNode:', currentAliasNode);
+
+      if (!currentAliasNode) {
+        // console.log(activityAlias);
+        manifest?.injectFragment('manifest/application', activityAlias);
+      }
+    }
 
     await project.commit();
   }
@@ -515,7 +576,7 @@ export class AndroidAssetGenerator extends AssetGenerator {
     if (!(await pathExists(parentDir))) {
       await mkdirp(parentDir);
     }
-    const dest = join(resPath, drawableDir, 'splash.png');
+    const dest = join(resPath, drawableDir, `${this.splashImageName}.png`);
 
     const outputInfo = await pipe.resize(template.width, template.height).png().toFile(dest);
 

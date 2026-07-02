@@ -1,6 +1,6 @@
 {
-  "name": "@capacitor/assets",
-  "version": "3.0.5",
+  "name": "@sopi/capacitor-assets",
+  "version": "99.0.8",
   "description": "Generate icon and splash screen images for Capacitor apps",
   "homepage": "https://ionicframework.com",
   "author": "Ionic Team <hi@ionicframework.com>",
@@ -22,7 +22,8 @@
     "fmt": "npm run prettier -- --write",
     "eslint": "eslint . --ext ts",
     "prettier": "prettier 'src/**/*.ts'",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "localtestpublish": "npm run build && npm version patch --no-git-tag-version --no-commit-hooks && npm pack"
   },
   "prettier": "@ionic/prettier-config",
   "eslintConfig": {
@@ -54,6 +55,7 @@
     "@trapezedev/project": "^7.0.10",
     "commander": "8.3.0",
     "debug": "4.3.4",
+    "elementtree": "^0.1.7",
     "fs-extra": "10.1.0",
     "node-fetch": "2.7.0",
     "node-html-parser": "5.4.2",
@@ -62,11 +64,12 @@
     "yargs": "17.7.2"
   },
   "devDependencies": {
-    "@capacitor/cli": "^6.0.0",
+    "@capacitor/cli": "7.4.2",
     "@changesets/cli": "2.26.2",
     "@ionic/eslint-config": "0.3.0",
     "@ionic/prettier-config": "4.0.0",
     "@types/debug": "4.1.8",
+    "@types/elementtree": "^0.1.5",
     "@types/fs-extra": "9.0.13",
     "@types/jest": "27.5.2",
     "@types/node": "^18.17.15",
