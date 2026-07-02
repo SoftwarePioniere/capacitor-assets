@@ -111,24 +111,4 @@ npm run build
 npm pack
 npm publish
 
-# direkt ausführen
-node ../capacitor-assets/bin/capacitor-assets
-
-# Android
-node ../capacitor-assets/bin/capacitor-assets generate --assetPath branding/dev/ --androidProject apps/teamorga-mobile/android --android
-node ../capacitor-assets/bin/capacitor-assets generate --assetPath branding/b04dev/ --androidProject apps/teamorga-mobile/android --android --customName b04
-node ../capacitor-assets/bin/capacitor-assets generate --assetPath branding/sopidev/ --androidProject apps/teamorga-mobile/android --android --customName sopi
-
-node ../capacitor-assets/bin/capacitor-assets generate --icon-path= branding/b04dev/icon-foreground.png --androidProject apps/teamorga-mobile/android --android --customName b04
-
-
-# iOS
-node ../capacitor-assets/bin/capacitor-assets generate --assetPath branding/dev/ --iosProject apps/teamorga-mobile/ios/App --ios
-node ../capacitor-assets/bin/capacitor-assets generate --assetPath branding/b04dev/ --iosProject apps/teamorga-mobile/ios/App --ios --customName b04
-
-node ../capacitor-assets/bin/capacitor-assets generate --assetPath branding/sopidev/ --iosProject apps/teamorga-mobile/ios/App --ios --customName sopidev
-
-# in application
-npm install --save-dev ../capacitor-assets/sopi-capacitor-assets-99.0.2.tgz
-
 ```
